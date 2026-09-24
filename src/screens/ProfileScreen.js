@@ -1,11 +1,23 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 export default function ProfileScreen() {
   return (
-    <View className="flex-1 items-center justify-center bg-gray-100">
-      <Text className="text-3xl font-bold">
-        Profile Screen
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Profile Screen</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f3f4f6",
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
+  },
+});

@@ -1,20 +1,42 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, StyleSheet } from "react-native";
 
 export default function HomeScreen({ navigation }) {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className="mb-5 text-3xl font-bold">
-        Home Screen
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Home Screen</Text>
 
       <Pressable
-        className="rounded-lg bg-blue-500 px-6 py-3"
+        style={styles.button}
         onPress={() => navigation.navigate("Profile")}
       >
-        <Text className="font-bold text-white">
-          Go to Profile
-        </Text>
+        <Text style={styles.buttonText}>Go to Profile</Text>
       </Pressable>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    padding: 20,
+  },
+  title: {
+    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  button: {
+    backgroundColor: "#3b82f6",
+    borderRadius: 10,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+});
