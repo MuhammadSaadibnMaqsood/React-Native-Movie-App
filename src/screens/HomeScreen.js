@@ -1,42 +1,40 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import { Platform, TouchableOpacity } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { View, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Bars3Icon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
+import { styles } from "../theme";
+import { ScrollView } from "react-native";
+import TrendingMovies from "../components/trendingMovies";
+import { useState } from "react";
 
-export default function HomeScreen({ navigation }) {
+const ios = Platform.OS == "ios";
+export default function HomeScreen() {
+
+  const [trending, setTrending] = useState([1,2,3])
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Home Screen</Text>
+    <View className="flex-1 bg-neutral-800">
+      <SafeAreaView className={ios ? "-mb-2" : "mb-3"}>
+        <StatusBar barStyle="light-content" />
 
-      <Pressable
-        style={styles.button}
-        onPress={() => navigation.navigate("Profile")}
+        <View className="flex-row justify-between items-start mx-4">
+          <Bars3Icon size={30} strokeWidth={2} color="white" />
+          <Text className="text-white text-3xl font-bold">
+            <Text style={styles.text}>M</Text>ovies
+          </Text>
+          <TouchableOpacity>
+            <MagnifyingGlassIcon size={30} strokeWidth={2} color="white" />{" "}
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 10 }}
       >
-        <Text style={styles.buttonText}>Go to Profile</Text>
-      </Pressable>
+        <TrendingMovies data={trending}/>
+      </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-    padding: 20,
-  },
-  title: {
-    marginBottom: 20,
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  button: {
-    backgroundColor: "#3b82f6",
-    borderRadius: 10,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "700",
-  },
-});
