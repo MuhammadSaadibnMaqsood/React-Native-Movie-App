@@ -7,11 +7,19 @@ import { styles } from "../theme";
 import { ScrollView } from "react-native";
 import TrendingMovies from "../components/trendingMovies";
 import { useState } from "react";
+import MovieList from "../components/movieList";
 
 const ios = Platform.OS == "ios";
 export default function HomeScreen() {
-
-  const [trending, setTrending] = useState([1,2,3])
+  const [trending, setTrending] = useState([1, 2, 3]);
+  const [upcoming, setUpcoming] = useState(
+    [
+      { image: "", movieName: "Ant Man" },
+      { image: "", movieName: "Ant Man" },
+      { image: "", movieName: "Ant Man" },
+    ],
+  );
+  const [topRated, setTopRated] = useState([1, 2, 3]);
 
   return (
     <View className="flex-1 bg-neutral-800">
@@ -33,7 +41,9 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 10 }}
       >
-        <TrendingMovies data={trending}/>
+        <TrendingMovies data={trending} />
+        <MovieList title="Upcoming" data={upcoming} />
+        <MovieList title="Top Rated" data={topRated} />
       </ScrollView>
     </View>
   );
