@@ -44,8 +44,8 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingBottom: 10 }}
       >
         <TrendingMovies data={trending} />
-        <MovieList title="Upcoming" data={upcoming} />
-        <MovieList title="Top Rated" data={topRated} />
+        <MovieList title="Upcoming" hideSeeAll={false} data={upcoming} />
+        <MovieList title="Top Rated"  hideSeeAll={false} data={topRated} />
       </ScrollView>
     </View>
   );

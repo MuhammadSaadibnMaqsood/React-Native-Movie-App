@@ -21,7 +21,7 @@ export default function AppNavigator() {
         options={{ headerShown: false }}
         component={MovieScreen}
       />
-      <Stack.Screen name="Cast" component={CastScreen} />
+      <Stack.Screen name="Cast"   options={{ headerShown: false }} component={CastScreen} />
     </Stack.Navigator>
   );
 }

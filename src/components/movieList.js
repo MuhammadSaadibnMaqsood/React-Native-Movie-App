@@ -13,7 +13,9 @@ import { useNavigation } from "@react-navigation/native";
 const { width, height } = Dimensions.get("window");
 
 
-const MovieList = ({ title, data }) => {
+const MovieList = ({ title, data, hideSeeAll }) => {
+  let movieName = "Ant-Man and the Wasp: Quantumania";
+
   const navigation = useNavigation();
 
   return (
@@ -24,11 +26,11 @@ const MovieList = ({ title, data }) => {
           {title}
         </Text>
 
-        <TouchableOpacity>
+        { !hideSeeAll && <TouchableOpacity>
           <Text style={styles.text} className="text-lg">
             See All
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity>}
       </View>
 
       <ScrollView
@@ -39,7 +41,7 @@ const MovieList = ({ title, data }) => {
         {data.map((item, index) => (
           <TouchableWithoutFeedback
             key={index}
-            onPress={() => navigation.navigate("Movie", item)}
+            onPress={() => navigation.push("Movie", item)}
           >
             <View className="space-y-1 mr-4">
 
@@ -53,9 +55,9 @@ const MovieList = ({ title, data }) => {
               />
 
               <Text className="text-neutral-300 text-center ml-1">
-                {item.movieName.length > 14
-                  ? item.movieName.slice(0, 14) + "..."
-                  : item.movieName}
+                {movieName.length > 14
+                  ? movieName.slice(0, 14) + "..."
+                  : movieName}
               </Text>
 
             </View>

@@ -15,6 +15,7 @@ import { Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Cast from "../components/cast";
+import MovieList from "../components/movieList";
 
 const { width, height } = Dimensions.get("window");
 const MovieScreen = () => {
@@ -24,6 +25,7 @@ const MovieScreen = () => {
 
   const [isFav, setIsFav] = useState(false);
   const [cast, setCast] = useState([1,2,3,4,5])
+  const [similarMovie, setSimilarMovie] = useState([1,2,3,4,5])
   useEffect(() => {
     // call api
   }, [item]);
@@ -101,6 +103,8 @@ const MovieScreen = () => {
       </View>
 
       <Cast cast={cast} navigation = {navigation} />
+
+      <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovie}/>
     </ScrollView>
   );
 };
