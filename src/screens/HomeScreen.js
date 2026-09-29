@@ -12,14 +12,16 @@ import MovieList from "../components/movieList";
 const ios = Platform.OS == "ios";
 export default function HomeScreen() {
   const [trending, setTrending] = useState([1, 2, 3]);
-  const [upcoming, setUpcoming] = useState(
-    [
-      { image: "", movieName: "Ant Man" },
-      { image: "", movieName: "Ant Man" },
-      { image: "", movieName: "Ant Man" },
-    ],
-  );
-  const [topRated, setTopRated] = useState([1, 2, 3]);
+  const [upcoming, setUpcoming] = useState([
+    { image: "", movieName: "Ant Man" },
+    { image: "", movieName: "Ant Man" },
+    { image: "", movieName: "Ant Man" },
+  ]);
+  const [topRated, setTopRated] = useState([
+    { image: "", movieName: "Ant Man" },
+    { image: "", movieName: "Ant Man" },
+    { image: "", movieName: "Ant Man" },
+  ]);
 
   return (
     <View className="flex-1 bg-neutral-800">
