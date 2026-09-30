@@ -1,21 +1,25 @@
-
 import { useNavigation } from "@react-navigation/native";
-import { Dimensions, ScrollView, TextInput, TouchableOpacity } from "react-native";
+import {
+  Dimensions,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+} from "react-native";
 import { TouchableWithoutFeedback } from "react-native";
 import { Image } from "react-native";
 import { View } from "react-native";
 import { useState } from "react";
-import {
-  MagnifyingGlassIcon,
-  XMarkIcon,
-} from "react-native-heroicons/outline";
+import { MagnifyingGlassIcon, XMarkIcon } from "react-native-heroicons/outline";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Loading from "../components/Loading";
 
 const { width, height } = Dimensions.get("window");
 
 let movieName = "Ant-Man and the Wasp: Quantumania";
 const SearchScreen = () => {
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
 
   const [results, setResults] = useState([1, 2, 3, 4, 5]);
 
@@ -39,7 +43,9 @@ const SearchScreen = () => {
         </TouchableOpacity>
       </View>
 
-      {results.length > 0 ? (
+      {loading ? (
+        <Loading />
+      ) : results.length > 0 ? (
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
@@ -50,9 +56,7 @@ const SearchScreen = () => {
         >
           {/* Results Header */}
           <View className="mb-5 flex-row items-center justify-between">
-            <Text className="text-lg font-bold text-white">
-              Search Results
-            </Text>
+            <Text className="text-lg font-bold text-white">Search Results</Text>
 
             <Text className="rounded-full bg-neutral-800 px-3 py-1 text-sm text-neutral-400">
               {results.length} movies
@@ -96,22 +100,18 @@ const SearchScreen = () => {
             <MagnifyingGlassIcon size="55" color="#737373" />
           </View>
 
-          <Text className="text-xl font-bold text-white">
-            No Movies Found
-          </Text>
+          <Text className="text-xl font-bold text-white">No Movies Found</Text>
 
           <Text className="mt-2 text-center text-sm leading-6 text-neutral-500">
-            We couldn't find any movies matching your search. Try searching
-            with a different name.
+            We couldn't find any movies matching your search. Try searching with
+            a different name.
           </Text>
 
           <TouchableOpacity
             onPress={() => navigation.navigate("Home")}
             className="mt-6 rounded-full bg-neutral-800 px-6 py-3"
           >
-            <Text className="font-semibold text-white">
-              Back to Home
-            </Text>
+            <Text className="font-semibold text-white">Back to Home</Text>
           </TouchableOpacity>
         </View>
       )}

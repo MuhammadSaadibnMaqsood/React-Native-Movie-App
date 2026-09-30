@@ -9,10 +9,12 @@ import TrendingMovies from "../components/trendingMovies";
 import { useState } from "react";
 import MovieList from "../components/movieList";
 import { useNavigation } from "@react-navigation/native";
+import Loading from "../components/Loading";
 
 const ios = Platform.OS == "ios";
 export default function HomeScreen() {
   const [trending, setTrending] = useState([1, 2, 3]);
+  const [loading, setLoading] = useState(false);
   const [upcoming, setUpcoming] = useState([
     { image: "", movieName: "Ant Man" },
     { image: "", movieName: "Ant Man" },
@@ -36,20 +38,23 @@ export default function HomeScreen() {
           <Text className="text-white text-3xl font-bold">
             <Text style={styles.text}>M</Text>ovies
           </Text>
-          <TouchableOpacity onPress={()=> navigation.navigate('Search')}>
+          <TouchableOpacity onPress={() => navigation.navigate("Search")}>
             <MagnifyingGlassIcon size={30} strokeWidth={2} color="white" />{" "}
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 10 }}
-      >
-        <TrendingMovies data={trending} />
-        <MovieList title="Upcoming" hideSeeAll={false} data={upcoming} />
-        <MovieList title="Top Rated"  hideSeeAll={false} data={topRated} />
-      </ScrollView>
+      {loading ? (
+        <Loading />
+      ) : (
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 10 }}
+        >
+          <TrendingMovies data={trending} />
+          <MovieList title="Upcoming" hideSeeAll={false} data={upcoming} />
+          <MovieList title="Top Rated" hideSeeAll={false} data={topRated} />
+        </ScrollView>
+      )}
     </View>
   );
 }

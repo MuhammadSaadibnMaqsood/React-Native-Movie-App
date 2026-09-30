@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
 import Cast from "../components/cast";
 import MovieList from "../components/movieList";
+import Loading from "../components/Loading";
 
 const { width, height } = Dimensions.get("window");
 const MovieScreen = () => {
@@ -24,8 +25,10 @@ const MovieScreen = () => {
   const navigation = useNavigation();
 
   const [isFav, setIsFav] = useState(false);
-  const [cast, setCast] = useState([1,2,3,4,5])
-  const [similarMovie, setSimilarMovie] = useState([1,2,3,4,5])
+  const [loading, setLoading] = useState(false);
+
+  const [cast, setCast] = useState([1, 2, 3, 4, 5]);
+  const [similarMovie, setSimilarMovie] = useState([1, 2, 3, 4, 5]);
   useEffect(() => {
     // call api
   }, [item]);
@@ -48,7 +51,9 @@ const MovieScreen = () => {
             <HeartIcon size="32" color={isFav ? theme.background : "white"} />
           </TouchableOpacity>
         </SafeAreaView>
-        <View>
+
+        {
+          loading ? (<Loading/>):(  <View>
           <Image
             source={{
               uri: "https://images.unsplash.com/photo-1789948731559-5d113d8744b6?q=80&w=987&auto=format&fit=crop",
@@ -70,7 +75,9 @@ const MovieScreen = () => {
             end={{ x: 0.5, y: 1 }}
             pointerEvents="none"
           />
-        </View>
+        </View>)
+        }
+      
       </View>
 
       <View style={{ marginTop: -(height * 0.09) }} className="space-y-3">
@@ -102,9 +109,9 @@ const MovieScreen = () => {
         </Text>
       </View>
 
-      <Cast cast={cast} navigation = {navigation} />
+      <Cast cast={cast} navigation={navigation} />
 
-      <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovie}/>
+      <MovieList title="Similar Movies" hideSeeAll={true} data={similarMovie} />
     </ScrollView>
   );
 };
