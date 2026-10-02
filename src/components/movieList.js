@@ -21,7 +21,7 @@ const MovieList = ({ title, data, hideSeeAll, emptyMessage }) => {
   return (
     <View className="mb-8 space-y-4">
       <View className="mx-4 flex-row justify-between items-center">
-        <Text className="text-white text-xl">{title}</Text>
+        <Text className="text-white text-2xl py-3 font-bold">{title}</Text>
 
         {!hideSeeAll && (
           <TouchableOpacity>

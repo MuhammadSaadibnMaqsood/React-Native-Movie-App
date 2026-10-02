@@ -12,7 +12,7 @@ const TrendingMovies = ({ data }) => {
 
   return (
     <View className="mb-8 h-[50vh]">
-      <Text className="text-white text-xl mx-4 mb-5">Trending</Text>
+      <Text className="text-white text-2xl py-2 font-bold mx-4 mb-5">Trending</Text>
 
       <Carousel
         width={width}

@@ -1,18 +1,43 @@
 import { useEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { styles } from "../theme";
-import { ChevronLeftIcon, HeartIcon } from "react-native-heroicons/outline";
+import { StatusBar } from "expo-status-bar";
+import { ChevronLeftIcon } from "react-native-heroicons/outline";
+import { HeartIcon as HeartOutlineIcon } from "react-native-heroicons/outline";
+import { HeartIcon as HeartSolidIcon } from "react-native-heroicons/solid";
 import { SafeAreaView } from "react-native-safe-area-context";
 import MovieList from "../components/movieList";
-import Loading from "../components/Loading";
-import { fetchPersonDetails, fetchPersonMovies, getImageUrl } from "../../api/moviedb";
+import { theme } from "../theme";
+import {
+  fetchPersonDetails,
+  fetchPersonMovies,
+  getImageUrl,
+} from "../../api/moviedb";
+
+const NOT_LISTED = "Not listed";
+
+function Stat({ label, value }) {
+  return (
+    <View className="w-1/2 p-1.5">
+      <View className="rounded-2xl border border-neutral-700 bg-neutral-800 px-4 py-3">
+        <Text className="text-xs text-neutral-400">{label}</Text>
+        <Text
+          className="mt-1 text-base font-semibold text-white"
+          numberOfLines={1}
+        >
+          {value}
+        </Text>
+      </View>
+    </View>
+  );
+}
 
 const CastScreen = () => {
   const { params } = useRoute();
@@ -21,6 +46,10 @@ const CastScreen = () => {
   const [isFav, setIsFav] = useState(false);
   const [personMovies, setPersonMovies] = useState([]);
   const [loading, setLoading] = useState(Boolean(initialPerson.id));
+  const [loadError, setLoadError] = useState(false);
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const [bioTruncated, setBioTruncated] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   const navigation = useNavigation();
 
@@ -37,51 +66,86 @@ const CastScreen = () => {
       if (moviesResponse.status === "fulfilled") {
         setPersonMovies(moviesResponse.value.cast || []);
       }
+      setLoadError(
+        detailsResponse.status === "rejected" &&
+          moviesResponse.status === "rejected",
+      );
       setLoading(false);
     });
 
     return () => controller.abort();
-  }, [initialPerson.id]);
+  }, [initialPerson.id, reloadKey]);
 
-  const gender = person.gender === 1 ? "Female" : person.gender === 2 ? "Male" : "Not listed";
+  const retry = () => {
+    setLoading(true);
+    setLoadError(false);
+    setReloadKey((key) => key + 1);
+  };
+
+  const gender =
+    person.gender === 1 ? "Female" : person.gender === 2 ? "Male" : NOT_LISTED;
   const profileImage = getImageUrl(person.profile_path, "w500");
+  const subtitle = person.place_of_birth || person.known_for_department || "";
+  const popularity =
+    typeof person.popularity === "number"
+      ? person.popularity.toFixed(1)
+      : NOT_LISTED;
 
   return (
-    <ScrollView
-      className="flex-1 bg-neutral-950"
-      showsVerticalScrollIndicator={false}
-    >
+    <View className="flex-1 bg-neutral-900">
+      <StatusBar style="light" />
+
+      {/* Floating actions stay visible while scrolling */}
       <SafeAreaView
-        className="z-20 w-full flex-row items-center justify-between px-5"
+        edges={["top"]}
+        className="absolute left-0 right-0 top-0 z-20 flex-row items-center justify-between px-4 pt-1"
+        pointerEvents="box-none"
       >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
-          style={styles.background}
-          className="rounded-2xl p-2.5"
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+          activeOpacity={0.8}
+          className="h-11 w-11 items-center justify-center rounded-full bg-black/50"
         >
-          <ChevronLeftIcon size="21" strokeWidth={2.5} color="white" />
+          <ChevronLeftIcon size={22} strokeWidth={2.5} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => setIsFav(!isFav)}
-          className="rounded-full bg-neutral-800/80 p-2.5"
+          onPress={() => setIsFav((favorite) => !favorite)}
+          accessibilityRole="button"
+          accessibilityLabel={
+            isFav ? "Remove from favorites" : "Add to favorites"
+          }
+          accessibilityState={{ selected: isFav }}
+          activeOpacity={0.8}
+          className="h-11 w-11 items-center justify-center rounded-full bg-black/50"
         >
-          <HeartIcon size="27" color={isFav ? "#ef4444" : "white"} />
+          {isFav ? (
+            <HeartSolidIcon size={24} color={theme.background} />
+          ) : (
+            <HeartOutlineIcon size={24} strokeWidth={2} color="white" />
+          )}
         </TouchableOpacity>
       </SafeAreaView>
 
-      {loading ? <Loading /> : null}
-      <View className="pb-8">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+      >
+        {/* Portrait */}
+        <SafeAreaView edges={["top"]} className="pt-14">
           <View
-            className="flex-row justify-center mt-4"
+            className="items-center"
             style={{
-              shadowColor: "grey",
-              shadowRadius: 40,
-              shadowOffset: { width: 0, height: 5 },
-              shadowOpacity: 1,
+              shadowColor: "#000",
+              shadowRadius: 24,
+              shadowOffset: { width: 0, height: 10 },
+              shadowOpacity: 0.5,
+              elevation: 12,
             }}
           >
-            <View className="items-center rounded-full overflow-hidden h-72 w-72 border-2 border-neutral-700 bg-neutral-800">
+            <View className="h-64 w-64 overflow-hidden rounded-full border-2 border-neutral-700 bg-neutral-800">
               {profileImage ? (
                 <Image
                   source={{ uri: profileImage }}
@@ -95,72 +159,97 @@ const CastScreen = () => {
               )}
             </View>
           </View>
+        </SafeAreaView>
 
-          <View className="mt-7 px-4">
-            <Text className="text-3xl text-white font-extrabold text-center tracking-tight">
-              {person.name || "Cast member"}
+        {/* Name */}
+        <View className="mt-6 px-4">
+          <Text className="text-center text-3xl font-extrabold tracking-tight text-white">
+            {person.name || "Cast member"}
+          </Text>
+          {subtitle ? (
+            <Text className="mt-1 text-center text-base text-neutral-400">
+              {subtitle}
             </Text>
-
-            <Text className="text-sm text-neutral-400 text-center mt-1">
-              {person.place_of_birth || person.known_for_department || ""}
-            </Text>
-          </View>
-
-          <View className="mx-4 mt-7 px-2 py-4 flex-row justify-between items-center bg-neutral-800 border border-neutral-700 rounded-2xl">
-            <View className="flex-1 items-center px-2 border-r border-neutral-600">
-              <Text className="text-neutral-400 text-xs uppercase tracking-wider">
-                Gender
-              </Text>
-              <Text className="text-white font-semibold text-sm mt-1">
-                {gender}
-              </Text>
-            </View>
-
-            <View className="flex-1 items-center px-2 border-r border-neutral-600">
-              <Text className="text-neutral-400 text-xs uppercase tracking-wider">
-                Birthday
-              </Text>
-              <Text className="text-white font-semibold text-sm mt-1">
-                {person.birthday || "Not listed"}
-              </Text>
-            </View>
-
-            <View className="flex-1 items-center px-2 border-r border-neutral-600">
-              <Text className="text-neutral-400 text-xs uppercase tracking-wider">
-                Known for
-              </Text>
-              <Text className="text-white font-semibold text-sm mt-1">
-                {person.known_for_department || "Not listed"}
-              </Text>
-            </View>
-
-            <View className="flex-1 items-center px-2">
-              <Text className="text-neutral-400 text-xs uppercase tracking-wider">
-                Popularity
-              </Text>
-              <Text className="text-white font-semibold text-sm mt-1">
-                {typeof person.popularity === "number" ? person.popularity.toFixed(1) : "Not listed"}
-              </Text>
-            </View>
-          </View>
-
-          <View className="mt-8 mx-5">
-            <Text className="text-white text-xl font-bold mb-3">Biography</Text>
-
-            <Text className="text-neutral-400 text-sm leading-6 tracking-wide">
-              {person.biography || "No biography is available."}
-            </Text>
-          </View>
-
-          <View className="mt-2">
-            <MovieList
-              data={personMovies}
-              title="Known For"
-              hideSeeAll={true}
-            />
-          </View>
+          ) : null}
         </View>
-    </ScrollView>
+
+        {/* Status */}
+        {loading ? (
+          <View className="mt-5 flex-row items-center justify-center">
+            <ActivityIndicator size="small" color="#a3a3a3" />
+            <Text className="ml-2 text-sm text-neutral-400">
+              Loading profile
+            </Text>
+          </View>
+        ) : null}
+        {loadError ? (
+          <View className="mx-4 mt-5 flex-row items-center rounded-2xl border border-neutral-700 bg-neutral-800 p-4">
+            <View className="flex-1">
+              <Text className="font-semibold text-white">
+                Profile didn't load
+              </Text>
+              <Text className="mt-0.5 text-sm text-neutral-400">
+                Check your connection and try again.
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={retry}
+              accessibilityRole="button"
+              accessibilityLabel="Retry loading profile"
+              activeOpacity={0.8}
+              className="ml-3 rounded-full bg-white px-4 py-2"
+            >
+              <Text className="font-semibold text-neutral-900">Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        {/* Stats */}
+        <View className="mx-2.5 mt-6 flex-row flex-wrap">
+          <Stat label="Gender" value={gender} />
+          <Stat label="Birthday" value={person.birthday || NOT_LISTED} />
+          <Stat
+            label="Known for"
+            value={person.known_for_department || NOT_LISTED}
+          />
+          <Stat label="Popularity" value={popularity} />
+        </View>
+
+        {/* Biography */}
+        <View className="mx-5 mt-6">
+          <Text className="mb-2 text-xl font-semibold text-white">
+            Biography
+          </Text>
+          <Text
+            className="text-base leading-7 text-neutral-300"
+            numberOfLines={bioExpanded ? undefined : 6}
+            onTextLayout={(event) => {
+              if (!bioExpanded) {
+                setBioTruncated(event.nativeEvent.lines.length > 6);
+              }
+            }}
+          >
+            {person.biography || "No biography is available."}
+          </Text>
+          {bioTruncated || bioExpanded ? (
+            <TouchableOpacity
+              onPress={() => setBioExpanded((expanded) => !expanded)}
+              accessibilityRole="button"
+              activeOpacity={0.7}
+              className="mt-2 self-start"
+            >
+              <Text style={{ color: theme.background }} className="font-semibold">
+                {bioExpanded ? "Show less" : "Read more"}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+        </View>
+
+        <View className="mt-4">
+          <MovieList data={personMovies} title="Known For" hideSeeAll={true} />
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
