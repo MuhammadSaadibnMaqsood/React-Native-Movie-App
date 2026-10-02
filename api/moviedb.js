@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const apiKey = "96885333b13c0fbeeb72df1f519c03d9";
+export const apiKey = import.meta.env.VITE_API_KEY;
 
 const apiBaseURL = "https://api.themoviedb.org/3";
 const apiCall = async (endpoint, params = {}, signal) => {
