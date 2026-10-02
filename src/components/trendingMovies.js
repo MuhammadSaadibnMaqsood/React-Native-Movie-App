@@ -1,21 +1,15 @@
 import { useNavigation } from "@react-navigation/native";
-import {
-  Image,
-  Text,
-  View,
-  TouchableWithoutFeedback,
-  Dimensions,
-} from "react-native";
+import { Image, Text, View, Dimensions, TouchableOpacity } from "react-native";
 import { Carousel } from "react-native-reanimated-carousel";
+import { getImageUrl } from "../../api/moviedb";
 
-const { width, height } = Dimensions.get("window");
-
-const handleClick = () => {
-  const navigation = useNavigation();
-  navigation.navigate("Movie", item);
-};
+const { width } = Dimensions.get("window");
 
 const TrendingMovies = ({ data }) => {
+  const navigation = useNavigation();
+
+  if (!Array.isArray(data) || data.length === 0) return null;
+
   return (
     <View className="mb-8 h-[50vh]">
       <Text className="text-white text-xl mx-4 mb-5">Trending</Text>
@@ -24,8 +18,15 @@ const TrendingMovies = ({ data }) => {
         width={width}
         height={350}
         data={data}
+        onConfigurePanGesture={(gesture) => {
+          gesture.activeOffsetX([-10, 10]);
+          gesture.failOffsetY([-10, 10]);
+        }}
         renderItem={({ item }) => (
-          <MovieCard item={item} handleClick={handleClick} />
+          <MovieCard
+            item={item}
+            onPress={() => navigation.push("Movie", item)}
+          />
         )}
       />
     </View>
@@ -34,23 +35,35 @@ const TrendingMovies = ({ data }) => {
 
 export default TrendingMovies;
 
-const MovieCard = ({ item, handleClick }) => {
+const MovieCard = ({ item, onPress }) => {
   return (
-    <TouchableWithoutFeedback onPress={handleClick}>
-      <View className="items-center">
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.85}
+      className="items-center"
+    >
+      {getImageUrl(item.poster_path, "w780") ? (
         <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1789948731559-5d113d8744b6?q=80&w=987&auto=format&fit=crop",
-          }}
-          style={{
-            height: 300,
-            width: width * 0.6,
-          }}
-          className="rounded-3xl"
+          source={{ uri: getImageUrl(item.poster_path, "w342") }}
+          style={{ height: 300, width: width * 0.6 }}
+          className="rounded-3xl bg-neutral-800"
         />
-
-        <Text className="text-white">Movie</Text>
-      </View>
-    </TouchableWithoutFeedback>
+      ) : (
+        <View
+          style={{ height: 300, width: width * 0.6 }}
+          className="items-center justify-center rounded-3xl bg-neutral-800"
+        >
+          <Text className="text-neutral-400">No poster</Text>
+        </View>
+      )}
+      <Text numberOfLines={1} className="mt-2 w-[60%] text-center text-white">
+        {item.title || item.name || "Untitled"}
+      </Text>
+      <Text className="mt-1 text-sm text-neutral-400">
+        {item.vote_average
+          ? `Rating ${item.vote_average.toFixed(1)}/10`
+          : "Not rated yet"}
+      </Text>
+    </TouchableOpacity>
   );
 };

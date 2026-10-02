@@ -1,25 +1,50 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { ScrollView, TouchableOpacity } from "react-native";
-import { Dimensions, Platform, Text, View } from "react-native";
-import { styles, theme } from "../theme";
+import {
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { styles } from "../theme";
 import { ChevronLeftIcon, HeartIcon } from "react-native-heroicons/outline";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image } from "react-native";
 import MovieList from "../components/movieList";
 import Loading from "../components/Loading";
-
-let { width, height } = Dimensions.get("window");
-const ios = Platform.OS === "ios";
-const verticalMargin = ios ? "" : "my-3";
+import { fetchPersonDetails, fetchPersonMovies, getImageUrl } from "../../api/moviedb";
 
 const CastScreen = () => {
   const { params } = useRoute();
+  const initialPerson = params?.person || {};
+  const [person, setPerson] = useState(initialPerson);
   const [isFav, setIsFav] = useState(false);
-  const [personMovies, setPersonMovies] = useState([1, 2, 3, 4, 5]);
-  const [loading, setLoading] = useState(false);
+  const [personMovies, setPersonMovies] = useState([]);
+  const [loading, setLoading] = useState(Boolean(initialPerson.id));
 
   const navigation = useNavigation();
+
+  useEffect(() => {
+    if (!initialPerson.id) return undefined;
+    const controller = new AbortController();
+
+    Promise.allSettled([
+      fetchPersonDetails(initialPerson.id, controller.signal),
+      fetchPersonMovies(initialPerson.id, controller.signal),
+    ]).then(([detailsResponse, moviesResponse]) => {
+      if (controller.signal.aborted) return;
+      if (detailsResponse.status === "fulfilled") setPerson(detailsResponse.value);
+      if (moviesResponse.status === "fulfilled") {
+        setPersonMovies(moviesResponse.value.cast || []);
+      }
+      setLoading(false);
+    });
+
+    return () => controller.abort();
+  }, [initialPerson.id]);
+
+  const gender = person.gender === 1 ? "Female" : person.gender === 2 ? "Male" : "Not listed";
+  const profileImage = getImageUrl(person.profile_path, "w500");
 
   return (
     <ScrollView
@@ -27,28 +52,26 @@ const CastScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <SafeAreaView
-        className={`z-20 w-full flex-row justify-between items-center px-5 ${verticalMargin}`}
+        className="z-20 w-full flex-row items-center justify-between px-5"
       >
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.background}
           className="rounded-2xl p-2.5"
         >
-          <ChevronLeftIcon size="21" strokWidth={2.5} color="white" />
+          <ChevronLeftIcon size="21" strokeWidth={2.5} color="white" />
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setIsFav(!isFav)}
           className="rounded-full bg-neutral-800/80 p-2.5"
         >
-          <HeartIcon size="27" fill={isFav ? "red" : "white"} />
+          <HeartIcon size="27" color={isFav ? "#ef4444" : "white"} />
         </TouchableOpacity>
       </SafeAreaView>
 
-      {loading ? (
-        <Loading />
-      ) : (
-        <View className="pb-8">
+      {loading ? <Loading /> : null}
+      <View className="pb-8">
           <View
             className="flex-row justify-center mt-4"
             style={{
@@ -59,22 +82,27 @@ const CastScreen = () => {
             }}
           >
             <View className="items-center rounded-full overflow-hidden h-72 w-72 border-2 border-neutral-700 bg-neutral-800">
-              <Image
-                style={{ height: height * 0.42, width: width * 0.74 }}
-                source={{
-                  uri: "https://m.media-amazon.com/images/M/MV5BMTU2NjA1ODgzMF5BMl5BanBnXkFtZTgwMTM2MTI4MjE@._V1_.jpg",
-                }}
-              />
+              {profileImage ? (
+                <Image
+                  source={{ uri: profileImage }}
+                  style={{ height: "100%", width: "100%" }}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View className="h-full w-full items-center justify-center">
+                  <Text className="text-neutral-500">No photo</Text>
+                </View>
+              )}
             </View>
           </View>
 
           <View className="mt-7 px-4">
             <Text className="text-3xl text-white font-extrabold text-center tracking-tight">
-              Keenu Reeves
+              {person.name || "Cast member"}
             </Text>
 
             <Text className="text-sm text-neutral-400 text-center mt-1">
-              London, United Kingdom
+              {person.place_of_birth || person.known_for_department || ""}
             </Text>
           </View>
 
@@ -84,7 +112,7 @@ const CastScreen = () => {
                 Gender
               </Text>
               <Text className="text-white font-semibold text-sm mt-1">
-                Male
+                {gender}
               </Text>
             </View>
 
@@ -93,7 +121,7 @@ const CastScreen = () => {
                 Birthday
               </Text>
               <Text className="text-white font-semibold text-sm mt-1">
-                29-03-2006
+                {person.birthday || "Not listed"}
               </Text>
             </View>
 
@@ -102,7 +130,7 @@ const CastScreen = () => {
                 Known for
               </Text>
               <Text className="text-white font-semibold text-sm mt-1">
-                Acting
+                {person.known_for_department || "Not listed"}
               </Text>
             </View>
 
@@ -111,7 +139,7 @@ const CastScreen = () => {
                 Popularity
               </Text>
               <Text className="text-white font-semibold text-sm mt-1">
-                64.78
+                {typeof person.popularity === "number" ? person.popularity.toFixed(1) : "Not listed"}
               </Text>
             </View>
           </View>
@@ -120,32 +148,18 @@ const CastScreen = () => {
             <Text className="text-white text-xl font-bold mb-3">Biography</Text>
 
             <Text className="text-neutral-400 text-sm leading-6 tracking-wide">
-              {" "}
-              following a massive solar storm, disgraced atmospheric physicist
-              Dr. following a massive solar storm, disgraced atmospheric
-              physicist Dr. following a massive solar storm, disgraced
-              atmospheric physicist Dr. following a massive solar storm,
-              disgraced atmospheric physicist Dr. following a massive solar
-              storm, disgraced atmospheric physicist Dr. following a massive
-              solar storm, disgraced atmospheric physicist Dr. following a
-              massive solar storm, disgraced atmospheric physicist Dr. following
-              a massive solar storm, disgraced atmospheric physicist Dr.
-              following a massive solar storm, disgraced atmospheric physicist
-              Dr. following a massive solar storm, disgraced atmospheric
-              physicist Dr. following a massive solar storm, disgraced
-              atmospheric physicist Dr.
+              {person.biography || "No biography is available."}
             </Text>
           </View>
 
           <View className="mt-2">
             <MovieList
               data={personMovies}
-              title={"Cast Movies"}
+              title="Known For"
               hideSeeAll={true}
             />
           </View>
         </View>
-      )}
     </ScrollView>
   );
 };
