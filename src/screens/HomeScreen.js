@@ -6,10 +6,11 @@ import { Bars3Icon, MagnifyingGlassIcon } from "react-native-heroicons/outline";
 import { styles } from "../theme";
 import { ScrollView } from "react-native";
 import TrendingMovies from "../components/trendingMovies";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import MovieList from "../components/movieList";
 import { useNavigation } from "@react-navigation/native";
 import Loading from "../components/Loading";
+import { fetchTrendingMovies } from "../../api/moviedb";
 
 const ios = Platform.OS == "ios";
 export default function HomeScreen() {
@@ -26,6 +27,18 @@ export default function HomeScreen() {
     { image: "", movieName: "Ant Man" },
   ]);
 
+  useEffect(() => {
+    getTrendingMovies();
+  });
+
+  async function getTrendingMovies() {
+    setLoading(true)
+    const movies = await fetchTrendingMovies();
+    if(movies && movies.result) {
+      setTrending(movies.result)
+    }
+    setLoading(false);
+  }
   const navigation = useNavigation();
 
   return (
